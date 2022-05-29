@@ -1,40 +1,124 @@
 <!doctype html>
-<html>
-	<head>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<html xmlns="http://www.w3.org/1999/html">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-		<title>reveal.js</title>
+  <title>reveal.js</title>
 
-		<link rel="stylesheet" href="dist/reset.css">
-		<link rel="stylesheet" href="dist/reveal.css">
-		<link rel="stylesheet" href="dist/theme/black.css">
+  <link rel="stylesheet" href="dist/reset.css">
+  <link rel="stylesheet" href="dist/reveal.css">
+  <link rel="stylesheet" href="dist/theme/black.css">
 
-		<!-- Theme used for syntax highlighted code -->
-		<link rel="stylesheet" href="plugin/highlight/monokai.css">
-	</head>
-	<body>
-		<div class="reveal">
-			<div class="slides">
-				<section>Slide 1</section>
-				<section>Slide 2</section>
-			</div>
-		</div>
+  <!-- Theme used for syntax highlighted code -->
+  <link rel="stylesheet" href="plugin/highlight/monokai.css">
+</head>
+<body>
+<div class="reveal">
+  <div class="slides">
+    <section><h1 class="r-fit-text">Entities <em>Explained</em></h1></section>
+    <section><h2>About me</h2></section>
+    <section><h2>Topics</h2>
+      <ul>
+        <li>Terminology, concepts</li>
+        <li>Content entities and fields</li>
+        <li>Revisions, Content moderation</li>
+        <li>Content translation</li>
+        <li>Storage</li>
+        <li>Displaying entities</li>
+        <li>New in Drupal 9.3: Bundle classes</li>
+      </ul>
+    </section>
+    <section>
+      <section><h2 class="r-fit-text">Terminology</h2></section>
+      <section>
+        <h3>Entity type</h3>
+        <p>
+          A certain type of entities. Also typically used for the entity type
+          definition, consisting of the ID, labels, handlers and other information
+          that makes up an entity type.
+        </p>
+        <h4>Examples</h4>
+        <p>
+          Node/Content (node), Term (taxonomy_term), User (user), User Role (user_role)<br>
+        </p>
+        <pre><code class="language-php">\Drupal\Core\Entity\EntityTypeInterface</code></pre>
+      </section>
+      <section>
+        <h3>Entity</h3>
+        <p>
+          A generic concept to store and access data.
+          A specific entity, identified by entity type and ID.
+        </p>
+        <h4>Examples</h4>
+        <p>
+          Node 1, User 17.
+        </p>
+        <pre><code class="language-php">\Drupal\Core\Entity\EntityInterface
+\Drupal\node\Entity\Node (\Drupal\node\NodeInterface)</code></pre>
+      </section>
+      <section>
+        <h3>Content entity (types)</h3>
+        <p>
+          A group of entity types that use fields and typed data. Many more
+          features like revisions, translations. Complex but predictable data
+          structures.
+        </p>
+        <h4>Examples</h4>
+        <p>
+          Node, User, File, Term.
+        </p>
+        <pre><code class="language-php">\Drupal\Core\Entity\ContentEntityInterface</code></pre>
+      </section>
+      <section>
+        <h3>Config entity (types)</h3>
+        <p>
+          A group of entity types that use the config system as storage.
+          Machine names as ID, inherits featurs of config (export, deploy,
+          config translations). Plain data. Often uses one or multiple plugins.
+        </p>
+        <h4>Examples</h4>
+        <p>
+          User Role, Vocabulary, Node Type, Block, View
+        </p>
+        <pre><code class="language-php">\Drupal\Core\Config\Entity\ConfigEntityInterface</code></pre>
+      </section>
+    </section>
+    <section>
+      <section><h2 class="r-fit-text">Content entities and fields</h2></section>
+    </section>
+    <section>
+      <section><h2 class="r-fit-text">Revisions, Content moderation</h2></section>
+    </section>
+    <section>
+      <section><h2 class="r-fit-text">Content translation</h2></section>
+    </section>
+    <section>
+      <section><h2 class="r-fit-text">Entity Storage</h2></section>
+    </section>
+    <section>
+      <section><h2 class="r-fit-text">Displaying entities</h2></section>
+    </section>
+    <section>
+      <section><h2 class="r-fit-text">Bundle classes</h2></section>
+    </section>
+  </div>
+</div>
 
-		<script src="dist/reveal.js"></script>
-		<script src="plugin/notes/notes.js"></script>
-		<script src="plugin/markdown/markdown.js"></script>
-		<script src="plugin/highlight/highlight.js"></script>
-		<script>
-			// More info about initialization & config:
-			// - https://revealjs.com/initialization/
-			// - https://revealjs.com/config/
-			Reveal.initialize({
-				hash: true,
+<script src="dist/reveal.js"></script>
+<script src="plugin/notes/notes.js"></script>
+<script src="plugin/markdown/markdown.js"></script>
+<script src="plugin/highlight/highlight.js"></script>
+<script>
+  // More info about initialization & config:
+  // - https://revealjs.com/initialization/
+  // - https://revealjs.com/config/
+  Reveal.initialize({
+    hash: true,
 
-				// Learn about plugins: https://revealjs.com/plugins/
-				plugins: [ RevealMarkdown, RevealHighlight, RevealNotes ]
-			});
-		</script>
-	</body>
+    // Learn about plugins: https://revealjs.com/plugins/
+    plugins: [RevealMarkdown, RevealHighlight, RevealNotes]
+  });
+</script>
+</body>
 </html>
