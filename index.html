@@ -121,7 +121,8 @@
       <section>
         <h3>Form/View modes and displays</h3>
         <p>
-          Configuration how content entities are viewed/edited. Displays contain components (mostly widget/formatter configuration for fields) for a given bundle.
+          Configuration how content entities are viewed/edited. Displays contain components (mostly widget/formatter
+          configuration for fields) for a given bundle.
           Modes define which displays may exist for a given entity type.
         </p>
         <h4>Examples</h4>
@@ -150,10 +151,12 @@
       <section>
         <h3>Structure</h3>
         <ul>
-          <li>A content entity is a container of fields.</li>
+          <li>A content entity is a container/map of fields.</li>
           <li>A field is a list of field items</li>
-          <li>A field item is a container of properties</li>
-          <li>Properties are typed data: primitive values (integer, string, ..), objects (language, date, ..) or references to another entity</li>
+          <li>A field item is a container/map of properties</li>
+          <li>Properties are typed data: primitive values (integer, string, ..), objects (language, date, ..) or
+            references to another entity
+          </li>
         </ul>
       </section>
       <section>
@@ -170,7 +173,7 @@
           <tr>
             <td>Entity</td>
             <td>ContentEntityInterface</td>
-            <td>::getTypedData()<br />EntityAdapter (complex data)</td>
+            <td>::getTypedData()<br/>EntityAdapter (complex data)</td>
           </tr>
           <tr>
             <td>Field</td>
@@ -188,61 +191,6 @@
           </tr>
           </tbody>
         </table>
-      </section>
-      <section>
-        <h3>Field definition</h3>
-        <ul>
-          <li>
-            <code>FieldStorageDefinitionInterface</code><br />
-            Shared between bundles, information and settings that are used for
-            the storage (table definition): Type, machine name, storage settings, type, entity type, cardinality, ...
-          </li>
-          <li>
-            <code>FieldDefinitionInterface</code><br />
-            Remaining configuration that can vary between bundles for the same field machine name: Label, bundle, settings, required, ...
-          </li>
-        </ul>
-      </section>
-      <section>
-        <h3>Field definition</h3>
-        <ul>
-          <li>
-            <code>BaseFieldDefinition implements FieldStorageDefinitionInterface, FieldDefinitionInterface</code><br />
-            Base fields are defined in code, in <code>::baseFieldDefinitions</code> of the entity class and  shared across all bundles.
-          </li>
-        </ul>
-      </section>
-      <section>
-        <h3>Field definition</h3>
-        <ul>
-          <li>
-            <code>FieldStorageConfig implements FieldStorageDefinitionInterface</code><br />
-            Storage settings for configurable fields (first step of creating a field in the UI)
-          </li>
-          <li>
-            <code>FieldConfig implements FieldDefinitionInterface</code><br />
-            Field definition for configurable fields (second step of creating a field in the UI)
-          </li>
-        </ul>
-      </section>
-      <section>
-        <h3>Field definition</h3>
-        <h4>Accessing field definitions with an entity</h4>
-        <pre><code class="language-php" data-line-numbers="1|2|3|4" data-trim>
-$entity->getFieldDefinitions();
-$entity->getFieldDefinition('field_name')
-$entity->get('field_name')->getFieldDefinition()
-$field_definition->getFieldStorageDefinition()
-        </code></pre>
-      </section>
-      <section>
-        <h3>Field definition</h3>
-        <h4>Accessing field definitions without an entity</h4>
-        <pre><code class="language-php" data-line-numbers="1|2|3|4" data-trim>
-$entity_field_manager = \Drupal::service('entity_field.manager')
-$entity_field_manager->getFieldStorageDefinitions($entity_type_id)
-$entity_field_manager->getFieldDefinitions($entity_type_id, $bundle)
-        </code></pre>
       </section>
       <section>
         <h3>Field types</h3>
@@ -318,6 +266,24 @@ $entity->get('field')->property;
       </section>
       <section>
         <h3>Accessing and setting values</h3>
+        <h4>Setting values</h4>
+        <pre><code class="language-php" data-line-numbers="1-2|3-4|5-6|7-8|9-10|11-12" data-trim>
+// Complete
+$entity->get('field')->get(0)->get('property')->setValue('myvalue');
+// Magic
+$entity->get('field')->property = 'myvalue';
+// ContentEntityInterface::set(), single/main property.
+$entity->set('field', 'myvalue');
+// ContentEntityInterface::set(), multiple properties.
+$node->set('body', ['value' => 'Hello', 'format' => 'plain_text']);
+// ContentEntityInterface::set(), multiple items.
+$user->set('roles', ['content_editor', 'administrator']);
+// Append an item.
+$user->get('roles')->appendItem('administrator');
+</code></pre>
+      </section>
+      <section>
+        <h3>Accessing and setting values</h3>
         <h4><code>getValue()</code></h4>
         <pre><code class="language-php" data-line-numbers="1-3|4-6|7-12|13-15" data-trim>
 // On a field item.
@@ -339,41 +305,147 @@ array_column($user->get('roles')->getValue(), 'target_id')
       </section>
       <section>
         <h3>Accessing and setting values</h3>
-        <h4>Setting values</h4>
-        <pre><code class="language-php" data-line-numbers="1-2|3-4|5-6|7-8|9-10|11-12" data-trim>
-// Complete
-$entity->get('field')->get(0)->get('property')->setValue('myvalue');
-// Magic
-$entity->get('field')->property = 'myvalue';
-// ContentEntityInterface::set(), single/main property.
-$entity->set('field', 'myvalue');
-// ContentEntityInterface::set(), multiple properties.
-$node->set('body', ['value' => 'Hello', 'format' => 'plain_text']);
-// ContentEntityInterface::set(), multiple items.
-$user->set('roles', ['content_editor', 'administrator']);
-// Append an item.
-$user->get('roles')->appendItem('administrator');
+        <h4><code>Loops</code></h4>
+        <pre><code class="language-php" data-line-numbers="1-2|3-7" data-trim>
+// Loop over all fields of an entity.
+foreach ($entity as $field_name => $field) {
+  // Loop over all items of a field.
+  foreach ($field as $item) {
+    if ($item->entity) {
+    }
+  }
+}
 </code></pre>
       </section>
-    </section>
       <section>
-        <h3>Do's, Don'ts and  gotchas</h3>
+        <h3>Field definition</h3>
+        <ul>
+          <li>
+            <code>FieldStorageDefinitionInterface</code><br/>
+            Shared between bundles, information and settings that are used for
+            the storage (table definition): Type, machine name, storage settings, type, entity type, cardinality, ...
+          </li>
+          <li>
+            <code>FieldDefinitionInterface</code><br/>
+            Remaining configuration that can vary between bundles for the same field machine name: Label, bundle,
+            settings, required, ...
+          </li>
+        </ul>
+      </section>
+      <section>
+        <h3>Field definition</h3>
+        <ul>
+          <li>
+            <code>BaseFieldDefinition implements FieldStorageDefinitionInterface, FieldDefinitionInterface</code><br/>
+            Base fields are defined in code, in <code>::baseFieldDefinitions</code> of the entity class and shared across
+            all bundles.
+          </li>
+        </ul>
+      </section>
+      <section>
+        <h3>Field definition</h3>
+        <ul>
+          <li>
+            <code>FieldStorageConfig implements FieldStorageDefinitionInterface</code><br/>
+            Storage settings for configurable fields (first step of creating a field in the UI)
+          </li>
+          <li>
+            <code>FieldConfig implements FieldDefinitionInterface</code><br/>
+            Field definition for configurable fields (second step of creating a field in the UI)
+          </li>
+        </ul>
+      </section>
+      <section>
+        <h3>Field definition</h3>
+        <h4>Accessing field definitions with an entity</h4>
+        <pre><code class="language-php" data-line-numbers="1|2|3|4" data-trim>
+  $entity->getFieldDefinitions();
+  $entity->getFieldDefinition('field_name')
+  $entity->get('field_name')->getFieldDefinition()
+  $field_definition->getFieldStorageDefinition()
+          </code></pre>
+      </section>
+      <section>
+        <h3>Field definition</h3>
+        <h4>Accessing field definitions without an entity</h4>
+        <pre><code class="language-php" data-line-numbers="1|2|3|4" data-trim>
+  $entity_field_manager = \Drupal::service('entity_field.manager')
+  $entity_field_manager->getFieldStorageDefinitions($entity_type_id)
+  $entity_field_manager->getFieldDefinitions($entity_type_id, $bundle)
+          </code></pre>
+      </section>
+      <section>
+        <h3>Do's, Don'ts and gotchas</h3>
         <h4>Property names vs. generic methods</h4>
         <pre><code class="language-php" data-line-numbers="1-5|6-9" data-trim>
-$node->get('title')->value
+  $node->get('title')->value
+  // is shorthand for
+  $node->get('title')->get('value')->getValue()
+  // And not the same as
+  $node->get('title')->getValue()
+  // ->entity on entity reference fields is the target.
+  $user->get('roles')->entity == $role;
+  // ->getEntity() is the host/parent entity.
+  $user->get('roles')->getEntity() == $user;
+  </code></pre>
+      </section>
+      <section>
+        <h3>Do's, Don'ts and gotchas</h3>
+        <h4>Magic methods on content entities</h4>
+        <pre><code class="language-php" data-line-numbers="1-3|4-7|8-9" data-trim>
+$node->title->value
 // is shorthand for
-$node->get('title')->get('value')->getValue()
-// And not the same as
-$node->get('title')->getValue()
-// ->entity on entity reference fields is the target.
-$user->get('roles')->entity == $role;
-// ->getEntity() is the host/parent entity.
-$user->get('roles')->getEntity() == $user;
-</code></pre>
+$node->get('title')->value
+// __get()/__set() support non-fields, get() does not:
+$node->foo = 'bar';
+// throws an exception:
+$node->set('foo', 'bar');
+// Various "API"s in rely on this behavior at the moment:
+$entity->original, $entity->view, $entity->_referringItem;
+  </code></pre>
+        <p><strong style="color:red">Recommendation: Avoid for fields</strong> <a href="https://www.drupal.org/project/drupal/issues/3281720">#3281720</a></p>
       </section>
     </section>
     <section>
       <section><h2 class="r-fit-text">Revisions, Content moderation</h2></section>
+      <section>
+        <h3>Overview</h3>
+        <ul>
+          <li>Content entities can be revisionable</li>
+          <li>An entity always has a default revision</li>
+          <li>An entity can be saved as a new revision</li>
+          <li>A new revision can be the new default revision or not, in which case it becomes a pending forward revision (drafts)</li>
+        </ul>
+      </section>
+      <section>
+        <h3>API</h3>
+        <pre><code class="language-php" data-line-numbers="1|2-3|4-7  " data-trim>
+ContentEntityInterface implement \Drupal\Core\Entity\RevisionableInterface.
+// Get the current revision ID.
+$entity->getRevisionId();
+// Set a new non-default revision.
+$entity->setNewRevision(TRUE);
+$entity->isDefaultRevisio(FALSE);
+$entity->save();
+  </code></pre>
+      </section>
+      <section>
+        <h3>Content moderation</h3>
+        <ul>
+          <li>User interface to create pending forward revisions</li>
+          <li>Forces new revisions on every save unless marked as sync (<code>SynchronizableInterface::setSyncing()</code>)</li>
+          <li>Configurable workflows with states (published, draft, archived) and transitions (publish, archive)</li>
+          <li>Configurable workflows with states (published, draft, archived) and transitions (publish, archive)</li>
+        </ul>
+      </section>
+      <section>
+        <h3>Content moderation</h3>
+        <ul>
+          <li>User interface to create pending forward revisions</li>
+          <li>Forces new revisions on every save unless marked as sync (<code>SynchronizableInterface::setSyncing()</code>)</li>
+          <li>Configurable workflows with states (published, draft, archived) and transitions (publish, archive)</li>
+        </ul>
+      </section>
     </section>
     <section>
       <section><h2 class="r-fit-text">Content translation</h2></section>
