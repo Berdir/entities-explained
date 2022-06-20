@@ -419,13 +419,13 @@ $entity->original, $entity->view, $entity->_referringItem;
       </section>
       <section>
         <h3>API</h3>
-        <pre><code class="language-php" data-line-numbers="1|2-3|4-7  " data-trim>
+        <pre><code class="language-php" data-line-numbers="1|2-3|4-7" data-trim>
 ContentEntityInterface implement \Drupal\Core\Entity\RevisionableInterface.
 // Get the current revision ID.
 $entity->getRevisionId();
 // Set a new non-default revision.
 $entity->setNewRevision(TRUE);
-$entity->isDefaultRevisio(FALSE);
+$entity->isDefaultRevision(FALSE);
 $entity->save();
   </code></pre>
       </section>
@@ -433,22 +433,68 @@ $entity->save();
         <h3>Content moderation</h3>
         <ul>
           <li>User interface to create pending forward revisions</li>
-          <li>Forces new revisions on every save unless marked as sync (<code>SynchronizableInterface::setSyncing()</code>)</li>
+          <li>Forces new revisions on every save unless marked as sync (<code>::setSyncing(TRUE)</code>)</li>
           <li>Configurable workflows with states (published, draft, archived) and transitions (publish, archive)</li>
-          <li>Configurable workflows with states (published, draft, archived) and transitions (publish, archive)</li>
+          <li>Only a single entity can be viewed as a draft at once</li>
         </ul>
       </section>
       <section>
-        <h3>Content moderation</h3>
+        <h3>Workspaces</h3>
         <ul>
-          <li>User interface to create pending forward revisions</li>
-          <li>Forces new revisions on every save unless marked as sync (<code>SynchronizableInterface::setSyncing()</code>)</li>
-          <li>Configurable workflows with states (published, draft, archived) and transitions (publish, archive)</li>
+          <li>Make changes to multiple entities, view the whole site in that state and publish together</li>
+          <li>View the whole site in that state</li>
+          <li>Publish together</li>
         </ul>
       </section>
     </section>
     <section>
       <section><h2 class="r-fit-text">Content translation</h2></section>
+      <section>
+        <h3>Overview</h3>
+        <ul>
+          <li>Content entities can be translatable</li>
+          <li>An entity always has a default translation</li>
+          <li>Translations can be added and removed</li>
+          <li>Each field is either translatable or not, in which case it has the same value in all translations</li>
+        </ul>
+      </section>
+      <section>
+        <h3>API</h3>
+        <pre><code class="language-php" data-line-numbers="1-2|3-4|5-6|7-8" data-trim>
+// Get the current language.
+$entity->language()->getId();
+// Check if a translation exists.
+$entity->hasTranslation('de');
+// Get a specific translation.
+$translation = $entity->getTranslation('de');
+// Add a translation.
+$translation = $entity->addTranslation('de', $values);
+// Remove a translation.
+$entity->removeTranslation('de');
+  </code></pre>
+      </section>
+      <section>
+        <h3>Safely get a translation or fallback</h3>
+        <pre><code class="language-php" data-trim>
+$er = \Drupal::service('entity.repository');
+$translation = $er->getTranslationFromContext($entity, 'de');
+  </code></pre>
+      </section>
+      <section>
+        <h3>Translations and revisions</h3>
+        <ul>
+          <li>Each revision contains all currently existing translations and their values</li>
+          <li>Revisions track which languages changed in them</li>
+          <li>To merge changes, only one translation may change in a given revision</li>
+          <li>New pending forward revisions of translations are based on the current published default language revision</li>
+        </ul>
+      </section>
+      <section>
+        <h3>Translations and revisions</h3>
+        <ul>
+          <li>Publishing a pending forward translation revision creates a new revision from the default translation and then copies all translable fields values</li>
+        </ul>
+      </section>
     </section>
     <section>
       <section><h2 class="r-fit-text">Entity Storage</h2></section>
