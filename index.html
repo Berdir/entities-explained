@@ -19,6 +19,9 @@
     .hljs-comment {
       color: lightskyblue;
     }
+    li {
+      margin-bottom: .5rem;
+    }
   </style>
 </head>
 <body>
@@ -492,7 +495,7 @@ $translation = $er->getTranslationFromContext($entity, 'de');
       <section>
         <h3>Translations and revisions</h3>
         <ul>
-          <li>Publishing a pending forward translation revision creates a new revision from the default translation and then copies all translable fields values</li>
+          <li>Publishing a pending forward translation revision creates a new revision from the default translation and then copies all translatable fields values</li>
         </ul>
       </section>
     </section>
@@ -501,9 +504,133 @@ $translation = $er->getTranslationFromContext($entity, 'de');
     </section>
     <section>
       <section><h2 class="r-fit-text">Displaying entities</h2></section>
+      <section>
+        <h3>Overview</h3>
+        <ul>
+          <li>EntityViewBuilder is responsible for converting an entity to a render array for a given view mode</li>
+          <li>Two-step process due to render caching: view() only prepares a minimal render array, build does almost all the work</li>
+          <li>Each field is prepared using a field formatter</li>
+          <li>Configuration stored in view displays for a given bundle</li>
+          <li>Twig templates for the entity and each field</li>
+        </ul>
+      </section>
+      <section>
+        <h3>API</h3>
+        <pre><code class="language-php" data-line-numbers="1-3|4-5|6-11" data-trim>
+// Render an entity.
+$view_builder = $entity_type_manager->getViewBuilder('node');
+$build = $view_builder->view($entity, 'teaser');
+// Render a single field using configuration for a given view mode.
+$build = $entity->get('body')->view('teaser');
+// Render a field using fixed configuration.
+$build = $entity->get('body')->view([
+  'label' => 'hidden',
+  'type' => '...',
+  'settings' => [],
+);
+  </code></pre>
+      </section>
+      <section>
+        <h3>View modes & displays</h3>
+        <ul>
+          <li>A view mode is for an entity type, indicates that a given entity may be viewed in a given way</li>
+          <li>View displays are for a given bundle, contain formatter settings and order for each enabled component</li>
+          <li>A non-existing view display falls back to "default"</li>
+        </ul>
+      </section>
+      <section>
+        <h3>Twig: Overview</h3>
+        <ul>
+          <li>No generic implementation for entity templates, theme suggestions and available variables</li>
+          <li>Some common standards, but each entity type is responsible to implement them itself</li>
+          <li>Required: An entity template (often with theme suggestions for bundles and view modes), a preprocess function</li>
+          <li>Look for template_preprocess_ENTITY_TYPE() to learn what is available</li>
+        </ul>
+      </section>
+      <section>
+        <h3>Twig: Node template</h3>
+        <ul>
+          <li>Theme suggestions: node--VIEW-MODE, node--BUNDLE, node--BUNDLE--VIEW-MODE</li>
+          <li><code>content</code>: Render arrays for each field created based on configured formatters</li>
+          <li><code>node</code>: The entity object, useful to check raw values</li>
+          <li>Avoid <code>elements</code>, it contains fields too, <code>content</code> exists because <code>{{ elements }}</code> would be an endless recursion</li>
+        </ul>
+      </section>
+      <section>
+        <h3>Twig: Display fields</h3>
+        <pre><code class="language-twig" data-line-numbers="1-2|3-4" data-trim>
+{# Display a single field including wrapping field template #}
+{{ content.field_foo }}
+{# Display first delta of a field, without any wrapping HTML #}
+{{ content.field_foo.0 }}}
+  </code></pre>
+      </section>
+      <section>
+        <h3>Twig: Check field values</h3>
+        <pre><code class="language-twig" data-line-numbers="1-4|5-10" data-trim>
+{# Display a field if it has value #}
+{% if node.field_name.value %}
+<h2>{{ content.field_name.0 }}</h2>
+{% end %}
+{# Check for a field value on a referenced entity #}
+{% if node.field_category.entity.field_highlight.value %}
+  <strong>{{ content.field_category.0 }}</strong>
+{% else %}
+  {{ content.field_category.0 }}
+{% end %}
+  </code></pre>
+      </section>
     </section>
     <section>
       <section><h2 class="r-fit-text">Bundle classes</h2></section>
+      <section>
+        <h3>Overview</h3>
+        <ul>
+          <li>Allows to define a single class per entity bundle to use instead of the default entity class</li>
+          <li>Useful to abstract business logic away, making it everywhere, including twig templates</li>
+          <li>Must extend from the entity class</li>
+          <li>Drush 11 has a generator to create the required basic structure and hook</li>
+          <li><a href="https://www.drupal.org/node/3191609">Change record</a></li>
+        </ul>
+      </section>
+      <section>
+        <h3>Define a bundle class</h3>
+        <pre><code class="language-php" data-trim>
+class BasicPage extends Node implements BasicPageInterface {
+
+  // Implement whatever business logic specific to basic pages.
+  public function hasHighlightCategory(): bool {
+    if ($this->get('field_category')->entity) {
+      return $this->get('field_category')->get('entity')
+          ->get('field_highlight')->value;
+    }
+    return FALSE;
+  }
+}
+  </code></pre>
+      </section>
+      <section>
+        <h3>Set a bundle class</h3>
+        <pre><code class="language-php" data-trim>
+function mymodule_entity_bundle_info_alter(array &$bundles) {
+  if (isset($bundles['node']['page'])) {
+    $bundles['node']['page']['class'] = BasicPage::class;
+  }
+}
+  </code></pre>
+      </section>
+      <section>
+        <h3>Twig & entity bundle classes</h3>
+        <p>Twig can use any method starting with get/has/is</p>
+        <pre><code class="language-twig" data-trim>
+{# Before #}
+{% if node.field_category.entity.field_highlight.value %}
+
+{# After #}
+{% if node.hasHighlightCategory() %}
+
+  </code></pre>
+      </section>
     </section>
   </div>
 </div>
