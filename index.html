@@ -95,7 +95,7 @@
         <h3>Config entity (types)</h3>
         <p>
           A group of entity types that use the config system as storage.
-          Machine names as ID, inherits featurs of config (export, deploy,
+          Machine names as ID, inherits features of config (export, deploy,
           config translations). Plain data. Often uses one or multiple plugins.
         </p>
         <h4>Examples</h4>
@@ -129,18 +129,6 @@
           Node: Node type, Term: Vocabulary, Media: Media type.
         </p>
         <pre><code class="language-php">$entity->bundle(), hook_entity_bundle_info()</code></pre>
-      </section>
-      <section>
-        <h3>Form/View modes and displays</h3>
-        <p>
-          Configuration how content entities are viewed/edited. Displays contain components (mostly widget/formatter
-          configuration for fields) for a given bundle.
-          Modes define which displays may exist for a given entity type.
-        </p>
-        <h4>Examples</h4>
-        <p>
-          View mode: Teaser, View display: Teaser for Node articles, Form mode/display: Edit profile/register for users.
-        </p>
       </section>
       <section>
         <h3>Typed data</h3>
@@ -179,6 +167,25 @@ $entity->delete();
 </code></pre>
       </section>
       <section>
+        <h3>Entity Query</h3>
+        <p>Find entities based on their values, works for content and config entities. <a href="https://api.drupal.org/api/drupal/core!lib!Drupal!Core!Entity!entity.api.php/group/entity_api/9.3.x#load_query">API documentation</a></p>
+        <pre><code class="language-php" data-line-numbers="1-2|3-4|5-6|7-8|9-10|11-12" data-trim>
+// Initialize a query object. Or: \Drupal::entityQuery('node')
+$fids = $s->getQuery()
+  // Conditions.
+  ->condition('type', ['page', 'article'], 'IN')
+  // Content entities support relationships.
+  ->condition('uid.entity.roles', 'administrator', '=')
+  // D10 requires to enable/disable access checks.
+  ->accessCheck(TRUE)
+  // Sorting.
+  ->sort('changed', 'DESC')
+  // Limit results.
+  ->range(0, 100)
+  ->execute();
+</code></pre>
+      </section>
+      <section>
         <h3>Common methods</h3>
         <pre><code class="language-php" data-line-numbers="1-2|3-4|5-6" data-trim>
 // Get the ID of an entity.
@@ -187,6 +194,8 @@ $entity->id();
 $entity->label();
 // Get the UUID.
 $entity->uuid();
+// Get all the values as an array.
+$entity->toArray();
 </code></pre>
       </section>
       <section>
@@ -205,7 +214,7 @@ $entity->hasLinkTemplate('edit-form');
       </section>
       <section>
         <h3>Access</h3>
-        <p>Allows to check if a user can view/update/delete or create an entity</p>
+        <p>Allows to check if a user can view/update/delete or create an entity. <a href="https://api.drupal.org/api/drupal/core!lib!Drupal!Core!Entity!entity.api.php/group/entity_api/#sec_access">API documentation</a></p>
         <pre><code class="language-php" data-line-numbers="1-2|3-6|7-8|9-10|11-14" data-trim>
 // Boolean check.
 $entity->access('view|update|delete') == TRUE;
@@ -301,59 +310,6 @@ function hook_ENTITY_TYPE_presave() {
         </ul>
       </section>
       <section>
-        <h3>Field type example</h3>
-        <pre><code class="language-php" data-line-numbers="1-11|13-19|21-29|31-41|43-45" data-trim>
-/**
- * @FieldType(
- *   id = "string",
- *   label = @Translation("Text (plain)"),
- *   description = @Translation("A field containing a plain string value."),
- *   category = @Translation("Text"),
- *   default_widget = "string_textfield",
- *   default_formatter = "string"
- * )
- */
-class StringItem extends FieldItemBase {
-
-  public static function defaultStorageSettings() {
-    return [
-      'max_length' => 255,
-      'is_ascii' => FALSE,
-      'case_sensitive' => FALSE,
-    ] + parent::defaultStorageSettings();
-  }
-
-  public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition) {
-    $properties['value'] = DataDefinition::create('string')
-      ->setLabel(new TranslatableMarkup('Text value'))
-      ->setSetting('case_sensitive',
-          $field_definition->getSetting('case_sensitive'))
-      ->setRequired(TRUE);
-
-    return $properties;
-  }
-
-  public static function schema(FieldStorageDefinitionInterface $field_definition) {
-    return [
-      'columns' => [
-        'value' => [
-          'type' => $field_definition->getSetting('is_ascii') === TRUE ? 'varchar_ascii' : 'varchar',
-          'length' => (int) $field_definition->getSetting('max_length'),
-          'binary' => $field_definition->getSetting('case_sensitive'),
-        ],
-      ],
-    ];
-  }
-
-  public static function mainPropertyName() {
-    return 'value';
-  }
-
-  // ...
-}
-        </code></pre>
-      </section>
-      <section>
         <h3>Accessing and setting values</h3>
         <h4>Accessing a field property</h4>
         <pre><code class="language-php" data-line-numbers="1-2|3-4|5-6|7-8" data-trim>
@@ -363,7 +319,7 @@ $entity->get('field')->get(0)->get('property')->getValue();
 $entity->get('field')[0]->get('property')->getValue();
 // __get() for properties equals ->get('property)->getValue();
 $entity->get('field')[0]->property;
-// Delta 0 is the default for properties when working with __get()
+// Delta 0 is the default for properties when using __get()
 $entity->get('field')->property;
 </code></pre>
       </section>
@@ -436,7 +392,7 @@ foreach ($entity as $field_name => $field) {
         </ul>
       </section>
       <section>
-        <h3>Field definition</h3>
+        <h3>Base fields</h3>
         <ul>
           <li>
             <code>BaseFieldDefinition implements FieldStorageDefinitionInterface, FieldDefinitionInterface</code><br/>
@@ -446,7 +402,7 @@ foreach ($entity as $field_name => $field) {
         </ul>
       </section>
       <section>
-        <h3>Field definition</h3>
+        <h3>Configurable fields</h3>
         <ul>
           <li>
             <code>FieldStorageConfig implements FieldStorageDefinitionInterface</code><br/>
@@ -521,7 +477,7 @@ $entity->original, $entity->view, $entity->_referringItem;
         </ul>
       </section>
       <section>
-        <h3>API</h3>
+        <h3>Revision API</h3>
         <pre><code class="language-php" data-line-numbers="1|2-3|4-7|8-11" data-trim>
 ContentEntityInterface implement ...\RevisionableInterface.
 // Get the current revision ID.
@@ -570,8 +526,8 @@ $entity->save();
         </ul>
       </section>
       <section>
-        <h3>API</h3>
-        <pre><code class="language-php" data-line-numbers="1-2|3-4|5-6|7-8" data-trim>
+        <h3>Translation API</h3>
+        <pre><code class="language-php" data-line-numbers="1-2|3-4|5-6|7-8|9-10" data-trim>
 // Get the current language.
 $entity->language()->getId();
 // Check if a translation exists.
@@ -601,14 +557,14 @@ $translation = $er->getTranslationFromContext($entity, 'de');
         </ul>
       </section>
       <section>
-        <h3>Translations and revisions</h3>
+        <h3>Revision graph translation drafts</h3>
+        <img src="images/revision_graph_translation_drafts.png" />
+      </section>
+      <section>
+        <h3>Publishing translations</h3>
         <ul>
           <li>Publishing a pending forward translation revision creates a new revision from the default translation and then copies all translatable fields values</li>
         </ul>
-      </section>
-      <section>
-        <h3>Revision graph translation drafts</h3>
-        <img src="images/revision_graph_translation_drafts.png" />
       </section>
       <section>
         <h3>Revision graph translation published</h3>
@@ -724,7 +680,7 @@ $translation = $er->getTranslationFromContext($entity, 'de');
         </ul>
       </section>
       <section>
-        <h3>API</h3>
+        <h3>View API</h3>
         <pre><code class="language-php" data-line-numbers="1-3|4-5|6-11" data-trim>
 // Render an entity.
 $view_builder = $entity_type_manager->getViewBuilder('node');
