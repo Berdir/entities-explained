@@ -47,7 +47,7 @@
         <li>Content translation</li>
         <li>Storage</li>
         <li>Displaying entities</li>
-        <li>New in Drupal 9.3: Bundle classes</li>
+        <li>Bundle classes</li>
       </ul>
     </section>
     <section>
@@ -169,25 +169,25 @@ $entity->delete();
       <section>
         <h3>Entity Query</h3>
         <p>Find entities based on their values, works for content and config entities. <a href="https://api.drupal.org/api/drupal/core!lib!Drupal!Core!Entity!entity.api.php/group/entity_api/9.3.x#load_query">API documentation</a></p>
-        <pre><code class="language-php" data-line-numbers="1-2|3-4|5-6|7-8|9-10|11-12" data-trim>
-// Initialize a query object. Or: \Drupal::entityQuery('node')
-$fids = $s->getQuery()
+        <pre><code class="language-php" data-line-numbers="1-2|3-4|5-6|7-8|9-11|12-13" data-trim>
+  // Or: \Drupal::entityQuery('node')
+  $fids = $s->getQuery()
   // Conditions.
   ->condition('type', ['page', 'article'], 'IN')
   // Content entities support relationships.
   ->condition('uid.entity.roles', 'administrator', '=')
   // D10 requires to enable/disable access checks.
   ->accessCheck(TRUE)
-  // Sorting.
+  // Sorting and limit results, pager is supported too.
   ->sort('changed', 'DESC')
-  // Limit results.
   ->range(0, 100)
+  // Returns a list of IDs, keys are revision ids.
   ->execute();
 </code></pre>
       </section>
       <section>
         <h3>Common methods</h3>
-        <pre><code class="language-php" data-line-numbers="1-2|3-4|5-6" data-trim>
+        <pre><code class="language-php" data-line-numbers="1-2|3-4|5-6|7-8" data-trim>
 // Get the ID of an entity.
 $entity->id();
 // Get the label.
@@ -226,7 +226,7 @@ $object->addCacheableDependency($access);
 $node->get('title')->access('view');
 // Create access.
 $etm->getAccesControlHandler('entity_type')->createAccess()
-// Access has 3 states.
+// Access has 3 states, use in access hooks.
 AccessResult::allowed();
 AccessResult::neutral();
 AccessResult::forbidden();
@@ -303,7 +303,7 @@ function hook_ENTITY_TYPE_presave() {
       <section>
         <h3>Field types</h3>
         <ul>
-          <li>Field types are defines as plugins with annotations</li>
+          <li>Field types are defined as plugins with annotations</li>
           <li>Represent the field item class</li>
           <li>Define their children (properties)</li>
           <li>Optionally provide a field item list class as well</li>
@@ -328,7 +328,7 @@ $entity->get('field')->property;
         <h4>Setting values</h4>
         <pre><code class="language-php" data-line-numbers="1-2|3-4|5-6|7-8|9-10|11-12" data-trim>
 // Complete
-$entity->get('field')->get(0)->get('property')->setValue('myvalue');
+$entity->get('field')->get(0)->get('property')->setValue('.');
 // Magic
 $entity->get('field')->property = 'myvalue';
 // ContentEntityInterface::set(), single/main property.
@@ -345,7 +345,7 @@ $user->get('roles')->appendItem('administrator');
         <h3>Accessing and setting values</h3>
         <h4><code>getValue()</code></h4>
         <pre><code class="language-php" data-line-numbers="1-3|4-6|7-12|13-15" data-trim>
-// On a field item.
+// On a field item property.
  $user->get('roles')[0]->get('target_id')->getValue()
 => "content_editor"
 // On a field item.
@@ -504,7 +504,7 @@ $entity->save();
       <section>
         <h3>Workspaces</h3>
         <ul>
-          <li>Make changes to multiple entities, view the whole site in that state and publish together</li>
+          <li>Make draft changes to multiple entities</li>
           <li>View the whole site in that state</li>
           <li>Publish together</li>
         </ul>
